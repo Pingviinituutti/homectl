@@ -6,7 +6,7 @@ use homectl_types::{
     event::{Message, TxEventChannel},
     integration::{IntegrationActionPayload, IntegrationId},
 };
-use palette::rgb::Rgb;
+use palette::{Hsv};
 use rand::prelude::*;
 use serde::Deserialize;
 use std::time::Duration;
@@ -15,6 +15,9 @@ use tokio::time;
 #[derive(Clone, Debug, Deserialize)]
 pub struct RandomConfig {
     device_name: String,
+    min_brightness: Option<f32>,
+    max_brightness: Option<f32>,
+    poll_rate: Option<u64>,
 }
 
 #[derive(Clone)]
@@ -73,19 +76,23 @@ impl CustomIntegration for Random {
     }
 }
 
-fn get_random_color() -> DeviceColor {
+fn get_random_color(random: &Random) -> DeviceColor {
+
     let mut rng = rand::thread_rng();
 
-    let r: f32 = rng.gen();
-    let g: f32 = rng.gen();
-    let b: f32 = rng.gen();
+    let min = random.config.min_brightness.unwrap_or(0.0).clamp(0.0, 1.0);
+    let max = random.config.max_brightness.unwrap_or(1.0).clamp(0.0, 1.0);
 
-    let rgb: Rgb = Rgb::new(r, g, b);
-    DeviceColor::Hsv(rgb.into())
+    let h: f32 = rng.gen_range(0.0, 360.0);
+    let s: f32 = rng.gen_range(0.5, 1.0);
+    let v: f32 = rng.gen_range(min, max);
+    
+    let hsv: Hsv = Hsv::new(h, s, v);
+    DeviceColor::Hsv(hsv)
 }
 
 async fn poll_sensor(random: Random) {
-    let poll_rate = Duration::from_millis(1000);
+    let poll_rate = Duration::from_millis(random.config.poll_rate.unwrap_or(1000));
     let mut interval = time::interval(poll_rate);
 
     loop {
@@ -105,7 +112,7 @@ fn mk_random_device(random: &Random) -> Device {
     let state = DeviceState::Light(Light::new(
         true,
         Some(1.0),
-        Some(get_random_color()),
+        Some(get_random_color(random)),
         Some(500),
     ));
 
