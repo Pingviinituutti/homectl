@@ -22,6 +22,14 @@ pub enum SensorRuleState {
         down: Option<bool>,
         off: Option<bool>,
     },
+    Temperature {
+        value: f64
+    },
+    LightLevel {
+        lightlevel: f64,
+        dark: bool,
+        daylight: bool,
+    },
     Unknown,
 }
 

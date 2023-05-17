@@ -4,6 +4,7 @@ use ts_rs::TS;
 use crate::{
     integration::IntegrationActionDescriptor,
     scene::{CycleScenesDescriptor, SceneDescriptor},
+    dim::DimDescriptor,
 };
 
 #[derive(TS, Clone, Deserialize, Debug, Serialize)]
@@ -18,6 +19,9 @@ pub enum Action {
 
     /// Runs an integration action
     IntegrationAction(IntegrationActionDescriptor),
+
+    /// Dims the given groups and devices
+    DimAction(DimDescriptor),
 }
 
 pub type Actions = Vec<Action>;

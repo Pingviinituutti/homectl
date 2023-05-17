@@ -140,59 +140,50 @@ fn compare_rule_device_state(rule: &Rule, device: &Device) -> Result<bool, Strin
                 (
                     SensorRuleState::DimmerSwitch {
                         on: Some(rule_on),
-                        up: _,
-                        down: _,
-                        off: _,
+                        ..
                     },
                     Some(SensorKind::DimmerSwitch {
                         on: sensor_on,
-                        up: _,
-                        down: _,
-                        off: _,
+                        ..
                     }),
                 ) => Ok(rule_on == sensor_on),
                 (
                     SensorRuleState::DimmerSwitch {
-                        on: _,
                         up: Some(rule_up),
-                        down: _,
-                        off: _,
+                        ..
                     },
                     Some(SensorKind::DimmerSwitch {
-                        on: _,
                         up: sensor_up,
-                        down: _,
-                        off: _,
+                        ..
                     }),
                 ) => Ok(rule_up == sensor_up),
                 (
                     SensorRuleState::DimmerSwitch {
-                        on: _,
-                        up: _,
                         down: Some(rule_down),
-                        off: _,
+                        ..
                     },
                     Some(SensorKind::DimmerSwitch {
-                        on: _,
-                        up: _,
                         down: sensor_down,
-                        off: _,
+                        ..
                     }),
                 ) => Ok(rule_down == sensor_down),
                 (
                     SensorRuleState::DimmerSwitch {
-                        on: _,
-                        up: _,
-                        down: _,
                         off: Some(rule_off),
+                        ..
                     },
                     Some(SensorKind::DimmerSwitch {
-                        on: _,
-                        up: _,
-                        down: _,
                         off: sensor_off,
+                        ..
                     }),
                 ) => Ok(rule_off == sensor_off),
+                (
+                    SensorRuleState::LightLevel { dark: rule_value, daylight: _, lightlevel: _ },
+                    Some(SensorKind::LightLevel {
+                        dark: sensor_value,
+                        ..
+                    }),
+                ) => Ok(rule_value == sensor_value),
                 (rule, sensor) => Err(format!(
                     "Unknown sensor states encountered when processing rule {:?}. (sensor: {:?})",
                     rule, sensor,

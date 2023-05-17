@@ -13,5 +13,6 @@ pub mod polling_integration;
 pub mod custom_integration;
 pub mod rule;
 pub mod scene;
+pub mod dim;
 pub mod utils;
 pub mod websockets;

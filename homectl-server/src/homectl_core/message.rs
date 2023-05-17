@@ -5,7 +5,8 @@ use homectl_types::{
     action::Action,
     event::*,
     integration::IntegrationActionDescriptor,
-    scene::{CycleScenesDescriptor, SceneDescriptor},
+    scene::{CycleScenesDescriptor, SceneDescriptor}, 
+    dim::DimDescriptor,
 };
 
 use crate::db::actions::{db_delete_scene, db_edit_scene, db_store_scene};
@@ -84,6 +85,18 @@ pub async fn handle_message(state: Arc<AppState>, msg: Message) {
             let mut devices = state.devices.clone();
             devices
                 .activate_scene(scene_id, device_keys, group_keys)
+                .await;
+
+            Ok(())
+        }
+        Message::Action(Action::DimAction(DimDescriptor {
+            device_keys,
+            group_keys,
+            step,
+        })) => {
+            let mut devices = state.devices.clone();
+            devices
+                .dim(device_keys, group_keys, step)
                 .await;
 
             Ok(())

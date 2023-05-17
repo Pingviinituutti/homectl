@@ -153,10 +153,10 @@ pub enum SensorKind {
         off: bool,
     },
     StringValue {
-        value: String
+        value: String,
     },
     Temperature {
-        value: f64
+        value: f64,
     },
     LightLevel {
         lightlevel: f64,
@@ -344,6 +344,18 @@ impl DeviceState {
             }
             DeviceState::MultiSourceLight(_) => {}
             DeviceState::Sensor(_) => {}
+        }
+    }
+
+    pub fn dim(&mut self, amount: f32) {
+        match self {
+            DeviceState::Light(state) => {
+                if state.power == true {
+                    state.brightness =
+                        Some((state.brightness.unwrap_or(0.0) - amount).clamp(0.1, 1.0));
+                }
+            }
+            _ => {}
         }
     }
 }
