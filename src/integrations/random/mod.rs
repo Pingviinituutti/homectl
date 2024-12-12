@@ -62,15 +62,15 @@ impl Integration for Random {
 fn get_random_color() -> DeviceColor {
     let mut rng = rand::thread_rng();
 
-    let r: u8 = rng.gen();
-    let g: u8 = rng.gen();
-    let b: u8 = rng.gen();
+    let h: u16 = rng.gen();
+    let s: f32 = 1.0;
+    // let b: u8 = rng.gen();
 
-    DeviceColor::new_from_rgb(r, g, b)
+    DeviceColor::new_from_hs(h, s)
 }
 
 async fn poll_sensor(random: Random) {
-    let poll_rate = Duration::from_millis(1000);
+    let poll_rate = Duration::from_millis(30000);
     let mut interval = time::interval(poll_rate);
 
     loop {
