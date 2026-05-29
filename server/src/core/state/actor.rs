@@ -23,6 +23,7 @@ use super::{
     metrics::{self, ActorMetrics, KIND_LABELS},
     AppState,
 };
+use crate::db::state_audit;
 use crate::core::{
     event::DeferredEventWork,
     snapshot::{SnapshotChanges, SnapshotHandle},
@@ -161,7 +162,14 @@ async fn run_actor(
 ) -> Result<()> {
     use crate::core::event::handle_event;
 
+    if let Err(error) =
+        state_audit::record_origin_device_states(&app_state.snapshot.load().clone()).await
+    {
+        warn!("Failed to record origin device audit rows: {error}");
+    }
+
     while let Some(cmd) = rx.recv().await {
+        let previous_snapshot = app_state.snapshot.load().clone();
         metrics.on_dequeue();
         let kind_idx = metrics::kind_index_for_command(&cmd);
         watchdog_kind.store(kind_idx, Ordering::SeqCst);
@@ -186,6 +194,14 @@ async fn run_actor(
                 let publish_started_at = Instant::now();
                 app_state.publish_snapshot(snapshot_changes);
                 let publish_elapsed = publish_started_at.elapsed();
+
+                let current_snapshot = app_state.snapshot.load().clone();
+                if let Err(error) =
+                    state_audit::record_device_state_changes(&previous_snapshot, &current_snapshot)
+                        .await
+                {
+                    warn!("Failed to record device audit log entry: {error}");
+                }
 
                 let elapsed = started_at.elapsed();
                 let slow = elapsed > Duration::from_millis(SLOW_EVENT_MUTATION_WARN_MS);
@@ -222,6 +238,14 @@ async fn run_actor(
                 let publish_started_at = Instant::now();
                 app_state.publish_snapshot(SnapshotChanges::all());
                 let publish_elapsed = publish_started_at.elapsed();
+
+                let current_snapshot = app_state.snapshot.load().clone();
+                if let Err(error) =
+                    state_audit::record_device_state_changes(&previous_snapshot, &current_snapshot)
+                        .await
+                {
+                    warn!("Failed to record device audit log entry: {error}");
+                }
 
                 let elapsed = started_at.elapsed();
                 let slow = elapsed > Duration::from_millis(SLOW_EVENT_MUTATION_WARN_MS);
